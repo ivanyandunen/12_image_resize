@@ -35,29 +35,23 @@ def parser_args():
     return parser.parse_args()
 
 
-def scale_image(original_image, scale):
+def resize_image(original_image, width, height, scale):
 
-    original_width = original_image.width
-    original_height = original_image.height
-    width = round(original_width * scale)
-    height = round(original_height * scale)
-
-    return original_image.resize((width, height), Image.ANTIALIAS)
-
-
-def resize_image(original_image, width, height):
-
-    if not args.height:
-        original_width = original_image.width
-        original_height = original_image.height
-        height = int((original_height * width) / original_width)
+    if scale:
+        width = round(original_image.width * scale)
+        height = round(original_image.height * scale)
+    else:
+        if not args.height:
+            height = int(
+                (original_image.height * width) / original_image.width
+            )
 
     return original_image.resize((width, height), Image.ANTIALIAS)
 
 
 def save_image(resized_image, path_to_result):
 
-    if not args.outpath:
+    if not path_to_result:
         path_to_result = os.path.dirname(args.inputfile)
 
     basename = os.path.basename(args.inputfile)
@@ -79,12 +73,12 @@ if __name__ == '__main__':
     try:
         args = parser_args()
         image = Image.open(args.inputfile)
-
-        if args.scale:
-            resized_image = scale_image(image, args.scale)
-        else:
-            resized_image = resize_image(image, args.width, args.height)
-
+        resized_image = resize_image(
+            image,
+            args.width,
+            args.height,
+            args.scale
+        )
         save_image(resized_image, args.outpath)
     except FileNotFoundError:
         print('File is incorrect or missed')
