@@ -1,9 +1,10 @@
 import argparse
 from PIL import Image
 import os
+import sys
 
 
-def parser_args():
+def get_parser_args():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -35,54 +36,71 @@ def parser_args():
     return parser.parse_args()
 
 
-def resize_image(original_image, width, height, scale):
+def check_args_errors():
+    if not args.inputfile:
+        print('File is incorrect or missed')
+        return False
+    if args.scale and (args.width or args.height):
+        print('You can specify only scale apart or width and height')
+        return False
+    if not any([args.scale, args.width]):
+        print('You have to specify scale or width')
+        return False
+    return True
 
+
+def treat_args(original_image, scale, width, height, path_to_result):
+    if not path_to_result:
+        path_to_result = os.path.dirname(args.inputfile)
+    if not scale and not height:
+        height = int(
+            (original_image.height * width) / original_image.width
+        )
     if scale:
         width = round(original_image.width * scale)
         height = round(original_image.height * scale)
-    else:
-        if not args.height:
-            height = int(
-                (original_image.height * width) / original_image.width
-            )
+
+    return path_to_result, width, height
+
+
+def resize_image(original_image, width, height):
 
     return original_image.resize((width, height), Image.ANTIALIAS)
 
 
-def save_image(resized_image, path_to_result):
+def save_image(resized_image, path_to_result, original_image):
 
-    if not path_to_result:
-        path_to_result = os.path.dirname(args.inputfile)
-
-    basename = os.path.basename(args.inputfile)
-    filename = os.path.splitext(basename)
-    resized_image_width = resized_image.width
-    resized_image_height = resized_image.height
+    fullname = os.path.basename(original_image)
+    filename, extension = os.path.splitext(fullname)
     resized_image.save(
         '{}\{}__{}x{}{}'.format(
             path_to_result,
-            filename[0],
-            resized_image_width,
-            resized_image_height,
-            filename[1]
+            filename,
+            resized_image.width,
+            resized_image.height,
+            extension
         )
     )
 
 
 if __name__ == '__main__':
-    try:
-        args = parser_args()
-        image = Image.open(args.inputfile)
-        resized_image = resize_image(
-            image,
-            args.width,
-            args.height,
-            args.scale
-        )
-        save_image(resized_image, args.outpath)
-    except FileNotFoundError:
-        print('File is incorrect or missed')
-    except TypeError:
-        print('You have to specify scale or width')
-    except ValueError:
-        print('Values must be > 0')
+
+    args = get_parser_args()
+    if not check_args_errors():
+        sys.exit()
+    image = Image.open(args.inputfile)
+
+    path_to_result, width, height = treat_args(
+        image,
+        args.scale,
+        args.width,
+        args.height,
+        args.outpath
+    )
+
+    resized_image = resize_image(
+        image,
+        width,
+        height
+    )
+    save_image(resized_image, path_to_result, args.inputfile)
