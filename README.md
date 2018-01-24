@@ -17,7 +17,7 @@ optional arguments:
   -i, --inputfile       Path to image file. Required parameter
   -w, --width           New width value. Ignored if --scale is used
   -ht, --height         New height value. Doesn't work without --width
-  -o, --outpath         Path for saving output file. The same as input path by default,
+  -o, --outpath         Path to resized file. The same as input path by default,
                         if not entered.
   -s, --scale           Value to scale input image. Can be < 1
 ```
