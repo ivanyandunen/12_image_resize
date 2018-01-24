@@ -24,7 +24,7 @@ def get_parser_args():
     )
     parser.add_argument(
         '-o', '--outpath',
-        help='Path for saving output file. '
+        help='Path to resized file. '
              'The same as input path by default, if not entered'
     )
     parser.add_argument(
@@ -36,31 +36,45 @@ def get_parser_args():
     return parser.parse_args()
 
 
-def check_args_errors():
-    if not args.inputfile:
-        print('File is incorrect or missed')
-        return False
+def check_args_errors(original_image):
     if args.scale and (args.width or args.height):
         print('You can specify only scale apart or width and height')
         return False
-    if not any([args.scale, args.width]):
-        print('You have to specify scale or width')
+    if not any([args.scale, args.width, args.height]):
+        print('You have to specify scale, width or height')
         return False
+    if args.outpath and os.path.isdir(args.outpath):
+        print('The path you specified is a directory')
+        return False
+    if args.outpath and os.path.exists(args.outpath):
+        print('Specified file exists')
+        return False
+    if args.width and args.height:
+        if (
+                (args.width / args.height) !=
+                (original_image.width / original_image.height)
+        ):
+            print(
+                'Warning!!! Aspect ratio of resized imagre will be different'
+            )
     return True
 
 
-def treat_args(original_image, scale, width, height, path_to_result):
-    if not path_to_result:
-        path_to_result = os.path.dirname(args.inputfile)
+def calculate_width_and_height(original_image, scale, width, height):
+
     if not scale and not height:
         height = int(
             (original_image.height * width) / original_image.width
+        )
+    if not scale and not width:
+        width = int(
+            (original_image.width * height) / original_image.height
         )
     if scale:
         width = round(original_image.width * scale)
         height = round(original_image.height * scale)
 
-    return path_to_result, width, height
+    return width, height
 
 
 def resize_image(original_image, width, height):
@@ -69,33 +83,32 @@ def resize_image(original_image, width, height):
 
 
 def save_image(resized_image, path_to_result, original_image):
-
-    fullname = os.path.basename(original_image)
-    filename, extension = os.path.splitext(fullname)
-    resized_image.save(
-        '{}\{}__{}x{}{}'.format(
-            path_to_result,
-            filename,
-            resized_image.width,
-            resized_image.height,
-            extension
+    if path_to_result:
+        resized_image.save(path_to_result)
+    else:
+        filename, extension = os.path.splitext(original_image)
+        path_to_result = ('{}__{}x{}{}'.format(
+                filename,
+                resized_image.width,
+                resized_image.height,
+                extension
+            )
         )
-    )
+        resized_image.save(path_to_result)
 
 
 if __name__ == '__main__':
 
     args = get_parser_args()
-    if not check_args_errors():
-        sys.exit()
     image = Image.open(args.inputfile)
+    if not check_args_errors(image):
+        sys.exit()
 
-    path_to_result, width, height = treat_args(
+    width, height = calculate_width_and_height(
         image,
         args.scale,
         args.width,
-        args.height,
-        args.outpath
+        args.height
     )
 
     resized_image = resize_image(
@@ -103,4 +116,4 @@ if __name__ == '__main__':
         width,
         height
     )
-    save_image(resized_image, path_to_result, args.inputfile)
+    save_image(resized_image, args.outpath, args.inputfile)
