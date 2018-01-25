@@ -49,19 +49,20 @@ def check_args_errors(original_image):
     if args.outpath and os.path.exists(args.outpath):
         print('Specified file exists')
         return False
-    if args.width and args.height:
-        if (
-                (args.width / args.height) !=
-                (original_image.width / original_image.height)
-        ):
-            print(
-                'Warning!!! Aspect ratio of resized imagre will be different'
-            )
+
     return True
 
 
-def calculate_width_and_height(original_image, scale, width, height):
+def check_aspect_ratio(original_image):
+    if args.width and args.height:
+        if ((args.width / args.height)
+                != (original_image.width / original_image.height)):
+            print(
+                'Warning!!! Aspect ratio of resized image will be different'
+            )
 
+
+def calculate_width_and_height(original_image, scale, width, height):
     if not scale and not height:
         height = int(
             (original_image.height * width) / original_image.width
@@ -103,7 +104,7 @@ if __name__ == '__main__':
     image = Image.open(args.inputfile)
     if not check_args_errors(image):
         sys.exit()
-
+    check_aspect_ratio(image)
     width, height = calculate_width_and_height(
         image,
         args.scale,
