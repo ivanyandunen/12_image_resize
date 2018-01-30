@@ -20,7 +20,7 @@ def get_parser_args():
     parser.add_argument(
         '-ht', '--height',
         type=int,
-        help='New height value. Doesn\'t work without --width'
+        help="New height value. Doesn't work without --width"
     )
     parser.add_argument(
         '-o', '--outpath',
@@ -36,7 +36,7 @@ def get_parser_args():
     return parser.parse_args()
 
 
-def check_args_errors(original_image):
+def check_args_errors():
     if args.scale and (args.width or args.height):
         print('You can specify only scale apart or width and height')
         return False
@@ -53,27 +53,38 @@ def check_args_errors(original_image):
     return True
 
 
-def check_aspect_ratio(original_image):
-    if args.width and args.height:
-        if ((args.width / args.height)
-                != (original_image.width / original_image.height)):
+def check_aspect_ratio(
+        width,
+        height,
+        original_image_width,
+        original_image_height
+):
+    if width and height:
+        if ((width / height)
+                != (original_image_width / original_image_height)):
             print(
                 'Warning!!! Aspect ratio of resized image will be different'
             )
 
 
-def calculate_width_and_height(original_image, scale, width, height):
+def calculate_width_and_height(
+        original_image_width,
+        original_image_height,
+        scale,
+        width,
+        height
+):
     if not scale and not height:
         height = int(
-            (original_image.height * width) / original_image.width
+            (original_image_height * width) / original_image_width
         )
     if not scale and not width:
         width = int(
-            (original_image.width * height) / original_image.height
+            (original_image_width * height) / original_image_height
         )
     if scale:
-        width = round(original_image.width * scale)
-        height = round(original_image.height * scale)
+        width = round(original_image_width * scale)
+        height = round(original_image_height * scale)
 
     return width, height
 
@@ -102,11 +113,13 @@ if __name__ == '__main__':
 
     args = get_parser_args()
     image = Image.open(args.inputfile)
-    if not check_args_errors(image):
+    if not check_args_errors():
         sys.exit()
-    check_aspect_ratio(image)
+    if args.width and args.height:
+        check_aspect_ratio(args.width, args.height, image.width, image.height)
     width, height = calculate_width_and_height(
-        image,
+        image.width,
+        image.height,
         args.scale,
         args.width,
         args.height
