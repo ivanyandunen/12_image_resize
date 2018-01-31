@@ -15,8 +15,8 @@ usage: image_resize.py [-h] -i INPUTFILE [-w WIDTH] [-ht HEIGHT] [-o OUTPATH]
 optional arguments:
   -h, --help            show this help message and exit
   -i, --inputfile       Path to image file. Required parameter
-  -w, --width           New width value. Ignored if --scale is used
-  -ht, --height         New height value. Doesn't work without --width
+  -w, --width           New width value.
+  -ht, --height         New height value.
   -o, --outpath         Path to resized file. The same as input path by default,
                         if not entered.
   -s, --scale           Value to scale input image. Can be < 1
