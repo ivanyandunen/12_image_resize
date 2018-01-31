@@ -15,12 +15,12 @@ def get_parser_args():
     parser.add_argument(
         '-w', '--width',
         type=int,
-        help='New width value. Ignored if --scale is used'
+        help='New width value.'
     )
     parser.add_argument(
         '-ht', '--height',
         type=int,
-        help="New height value. Doesn't work without --width"
+        help="New height value."
     )
     parser.add_argument(
         '-o', '--outpath',
@@ -59,12 +59,8 @@ def check_aspect_ratio(
         original_image_width,
         original_image_height
 ):
-    if width and height:
-        if ((width / height)
-                != (original_image_width / original_image_height)):
-            print(
-                'Warning!!! Aspect ratio of resized image will be different'
-            )
+    if (width / height) != (original_image_width / original_image_height):
+        print('Warning!!! Aspect ratio of resized image will be different')
 
 
 def calculate_width_and_height(
@@ -94,11 +90,11 @@ def resize_image(original_image, width, height):
     return original_image.resize((width, height), Image.ANTIALIAS)
 
 
-def save_image(resized_image, path_to_result, original_image):
+def save_image(resized_image, path_to_result, source_image_name):
     if path_to_result:
         resized_image.save(path_to_result)
     else:
-        filename, extension = os.path.splitext(original_image)
+        filename, extension = os.path.splitext(source_image_name)
         path_to_result = ('{}__{}x{}{}'.format(
                 filename,
                 resized_image.width,
